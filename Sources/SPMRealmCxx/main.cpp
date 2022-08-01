@@ -106,6 +106,65 @@ struct DVRDatum: realm::object {
     realm::property<"tmsserviceid", &DVRDatum::tmsserviceid>>;
 };
 
+DVRDatum make_sample_1() {
+    auto dvr_device = DVRDatum();
+    dvr_device._id = 1;
+    dvr_device.devicehash = "john";
+
+    return dvr_device;
+}
+
+DVRDatum make_sample_102() {
+    auto dvr_device = DVRDatum();
+    dvr_device._id = 102;       // should be object ID
+    dvr_device.accounthash = "eb9c1c569d9d32354797454e42082a4ec4eef9b16fa371f7cf0acdf4db0faeeb";
+    dvr_device.dvrid = 11;
+    dvr_device.devicehash = "476c6bab84ccc093ab6928e619db82b28db34c376c94d6b87dd21dd64f7f0769";
+    dvr_device.assetname = "a_GCvrry_JClBQ9";
+    dvr_device.bumpflags = 3630;
+    dvr_device.category = 144;
+    dvr_device.chname = "HD PPV 2";
+    dvr_device.chnum = 1002;
+    dvr_device.circuithash = "";
+    dvr_device.dtlastupdatedate = "2022-03-29 19:49:51.997+0000";
+    dvr_device.earlymins = 0;
+    dvr_device.epgduration = 3600;
+    dvr_device.epgstarttime = 1332529200;
+    dvr_device.episodename = "";
+    dvr_device.genre = "Sports & Fitness";
+    dvr_device.imgflags = 1332529170;
+    dvr_device.lastwatched = 1332529823;
+    dvr_device.latemins = 0;
+    dvr_device.numbertokeep = "";
+    dvr_device.parentid = 0;
+    dvr_device.progname = "Women's Extreme Wrestling: Girl Squad";
+    dvr_device.programid = 4109257595;  //should be long
+    dvr_device.progtmsid = "SH041754700000";
+    dvr_device.pvrorder = "";
+    dvr_device.rating = "TV-14";
+    dvr_device.rcrdduration = 3661;
+    dvr_device.rcrdflags = 432;
+    dvr_device.rcrdquality = 1;
+    dvr_device.rcrdstarttime = 1332529170;
+    dvr_device.rcrdtype = 0;
+    dvr_device.resumepoint = 211;
+    dvr_device.scheduledtime = 1332528657;
+    dvr_device.seriesflags = "";
+    dvr_device.seriesid = 0;
+    dvr_device.seriesname = "";
+    dvr_device.seriesrootid = 21457377;
+    dvr_device.seriestmsid = "";
+    dvr_device.serviceid = 13552;
+    dvr_device.srcclienthash = "c1306b7b64eebc60972217ce8601c6c27718df9e2f540e3544959c8215551a03";
+    dvr_device.state = "recorded";
+    dvr_device.status = "stopRecording";
+    dvr_device.teamaid = "";
+    dvr_device.teambid = 0;
+    dvr_device.tmsserviceid = 120420;
+    
+    return dvr_device;
+}
+
 realm::task<void> wait_for_sync_uploads(const realm::User& user) {
     auto sync_sessions = user.m_user->sync_manager()->get_all_sessions();
     auto session = sync_sessions[0];
@@ -172,9 +231,7 @@ realm::task<void> run_realm() {
     devices = synced_realm.objects<DVRDatum>();
     std::cout << "devices count DEUX: " << devices.size() << std::endl;
     
-    auto dvr_device = DVRDatum();
-    dvr_device._id = 1;
-    dvr_device.devicehash = "john";
+    auto dvr_device = make_sample_102();
 
     synced_realm.write([&synced_realm, &dvr_device]() {
         synced_realm.add(dvr_device);
@@ -188,14 +245,14 @@ realm::task<void> run_realm() {
     });
 
     synced_realm.write([&synced_realm, &dvr_device]() {
-        dvr_device.devicehash = "sarah";
+        dvr_device.episodename = "episode_1";
     });
 
     co_await wait_for_sync_uploads(user);
     co_await wait_for_sync_downloads(user);
 
     synced_realm.write([&synced_realm, &dvr_device]() {
-        dvr_device.devicehash = "bob";
+        dvr_device.episodename = "episode_2";
     });
 
     co_await wait_for_sync_uploads(user);
