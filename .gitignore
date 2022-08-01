@@ -4,3 +4,5 @@
 .swiftpm/xcode/package.xcworkspace/xcuserdata/mark.brown.xcuserdatad/UserInterfaceState.xcuserstate
 
 .swiftpm/xcode/xcuserdata/mark.brown.xcuserdatad/xcschemes/xcschememanagement.plist
+
+.DS_Store
