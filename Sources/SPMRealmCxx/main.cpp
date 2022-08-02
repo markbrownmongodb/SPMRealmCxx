@@ -1,11 +1,15 @@
 //
 //  main.cpp
-//
+//  
 //
 //  Created by Lee Maguire on 28/07/2022.
 //
 
+#include <chrono>
+#include <semaphore>
 #include <stdio.h>
+#include <thread>
+#include "event_loop.hpp"
 #include <cpprealm/sdk.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 
@@ -46,9 +50,9 @@ realm::task<void> wait_for_sync_downloads(const realm::User& user) {
     co_return;
 }
 
-realm::task<void> task;
+realm::task<realm::db_config> task;
 
-realm::task<void> run_realm() {
+realm::task<realm::db_config> run_realm() {
     auto app = realm::App("cpp-sdk-2-pgjiz");
     auto user = co_await app.login(realm::App::Credentials::anonymous());
 
@@ -76,12 +80,12 @@ realm::task<void> run_realm() {
         synced_realm.add(person);
     });
 
-    co_await wait_for_sync_uploads(user);
-    co_await wait_for_sync_downloads(user);
-
     auto token = person.observe<FooObject>([](auto&& change) {
         std::cout << "property changed" << std::endl;
     });
+
+    co_await wait_for_sync_uploads(user);
+    co_await wait_for_sync_downloads(user);
 
     synced_realm.write([&synced_realm, &person]() {
         person.str_col = "sarah";
@@ -97,12 +101,29 @@ realm::task<void> run_realm() {
     co_await wait_for_sync_uploads(user);
     co_await wait_for_sync_downloads(user);
 
-    co_return;
-}
+    auto r = realm::thread_safe_reference<FooObject>(person);
 
+    co_return flx_sync_config;
+}
 
 int main() {
     task = run_realm();
     while (task.handle.done() == false) { }
+
+    auto config = task.await_resume();
+    realm::notification_token token;
+    auto db = realm::open<FooObject>(config);
+    auto obj = *db.objects<FooObject>()[0];
+
+    realm::util::EventLoop::main().perform([c = std::move(config), &token, &db, &obj]() {
+        token = obj.observe<FooObject>([](auto&& change) {
+            std::cout << "property changed async" << std::endl;
+        });
+    });
+
+    realm::util::EventLoop::main().run_until([]() {
+        return false;
+    });
+
     return 0;
 }

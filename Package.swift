@@ -24,7 +24,7 @@ var cxxSettings: [CXXSetting] = [
 
 let package = Package(
     name: "SPMRealmCxx",
-    platforms: [.macOS(.v10_15)],
+    platforms: [.macOS(.v11)],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
