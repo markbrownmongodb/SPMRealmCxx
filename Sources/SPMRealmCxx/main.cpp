@@ -342,6 +342,7 @@ int main() {
     realm::util::EventLoop::main().perform([c = std::move(config), &token, &db, &obj]() {
         token = obj.observe<DVRDatum>([](auto&& change) {
             std::cout << "property changed async" << std::endl;
+            std::cout << "device: " << *(change.object) << std::endl;
         });
     });
 
