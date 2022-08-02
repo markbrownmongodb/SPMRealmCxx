@@ -1,12 +1,13 @@
 //
 //  main.cpp
-//  
+//
 //
 //  Created by Lee Maguire on 28/07/2022.
 //
 
 #include <stdio.h>
 #include <cpprealm/sdk.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
 
 struct FooObject: realm::object {
 
@@ -26,6 +27,24 @@ struct FooObject: realm::object {
     realm::property<"uuid_col", &FooObject::uuid_col>,
     realm::property<"binary_col", &FooObject::binary_col>>;
 };
+
+realm::task<void> wait_for_sync_uploads(const realm::User& user) {
+    auto sync_sessions = user.m_user->sync_manager()->get_all_sessions();
+    auto session = sync_sessions[0];
+    co_await realm::make_awaitable<std::error_code>([&] (auto cb) {
+        session->wait_for_upload_completion(cb);
+    });
+    co_return;
+}
+
+realm::task<void> wait_for_sync_downloads(const realm::User& user) {
+    auto sync_sessions = user.m_user->sync_manager()->get_all_sessions();
+    auto session = sync_sessions[0];
+    co_await realm::make_awaitable<std::error_code>([&] (auto cb) {
+        session->wait_for_download_completion(cb);
+    });
+    co_return;
+}
 
 realm::task<void> task;
 
@@ -57,6 +76,9 @@ realm::task<void> run_realm() {
         synced_realm.add(person);
     });
 
+    co_await wait_for_sync_uploads(user);
+    co_await wait_for_sync_downloads(user);
+
     auto token = person.observe<FooObject>([](auto&& change) {
         std::cout << "property changed" << std::endl;
     });
@@ -65,9 +87,15 @@ realm::task<void> run_realm() {
         person.str_col = "sarah";
     });
 
+    co_await wait_for_sync_uploads(user);
+    co_await wait_for_sync_downloads(user);
+
     synced_realm.write([&synced_realm, &person]() {
         person.str_col = "bob";
     });
+
+    co_await wait_for_sync_uploads(user);
+    co_await wait_for_sync_downloads(user);
 
     co_return;
 }
