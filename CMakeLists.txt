@@ -5,7 +5,7 @@ project (SPMRealmCxx)
 set(CMAKE_CXX_STANDARD 20)
 set(REALM_ENABLE_SYNC 1)
 
-add_executable(SPMRealmCxx Sources/SPMRealmCxx/main.cpp Sources/SPMRealmCxx.event_loop.cpp Sources/SPMRealmCxx.hpp)
+add_executable(SPMRealmCxx Sources/SPMRealmCxx/main.cpp Sources/SPMRealmCxx/event_loop.cpp Sources/SPMRealmCxx/event_loop.hpp)
 target_include_directories(SPMRealmCxx PUBLIC /usr/local/include)
 target_compile_definitions(SPMRealmCxx PUBLIC REALM_DISABLE_METADATA_ENCRYPTION=1 REALM_ENABLE_SYNC=1 REALM_VERSION="0.0.1" REALM_NO_CONFIG=1 REALM_ENABLE_ASSERTIONS=1 REALM_ENABLE_ENCRYPTION=1)
 
