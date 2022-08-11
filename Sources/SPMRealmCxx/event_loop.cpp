@@ -25,8 +25,6 @@
 #include <stdexcept>
 #include <vector>
 
-#define REALM_USE_UV 1
-
 #if REALM_USE_UV
 #include <uv.h>
 #elif REALM_PLATFORM_APPLE
