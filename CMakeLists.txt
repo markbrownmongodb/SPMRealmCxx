@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.15)
 
-project (hello)
+project (SPMRealmCxx)
 
 set(CMAKE_CXX_STANDARD 20)
 set(REALM_ENABLE_SYNC 1)
 
-add_executable(hello main.cpp)
-target_include_directories(hello PUBLIC /usr/local/include)
-target_compile_definitions(hello PUBLIC REALM_DISABLE_METADATA_ENCRYPTION=1 REALM_ENABLE_SYNC=1 REALM_VERSION="0.0.1" REALM_NO_CONFIG=1 REALM_ENABLE_ASSERTIONS=1 REALM_ENABLE_ENCRYPTION=1)
+add_executable(SPMRealmCxx Sources/SPMRealmCxx/main.cpp Sources/SPMRealmCxx.event_loop.cpp Sources/SPMRealmCxx.hpp)
+target_include_directories(SPMRealmCxx PUBLIC /usr/local/include)
+target_compile_definitions(SPMRealmCxx PUBLIC REALM_DISABLE_METADATA_ENCRYPTION=1 REALM_ENABLE_SYNC=1 REALM_VERSION="0.0.1" REALM_NO_CONFIG=1 REALM_ENABLE_ASSERTIONS=1 REALM_ENABLE_ENCRYPTION=1)
 
 find_library (
     REALM_CORE_LIB
@@ -40,9 +40,9 @@ find_library (
 message(STATUS "CPP_REALM_LIB: [${CPP_REALM_LIB}]")
 
 if(APPLE)
-    target_link_libraries(hello "-lcompression" "-framework Foundation" "-framework Security")
+    target_link_libraries(SPMRealmCxx "-lcompression" "-framework Foundation" "-framework Security")
 endif()
 
-target_link_libraries(hello ${CPP_REALM_LIB} ${REALM_OBJECT_STORE_LIB} ${REALM_SYNC_LIB} ${REALM_CORE_LIB} ${REALM_CORE_PARSER_LIB} z curl stdc++)
+target_link_libraries(SPMRealmCxx ${CPP_REALM_LIB} ${REALM_OBJECT_STORE_LIB} ${REALM_SYNC_LIB} ${REALM_CORE_LIB} ${REALM_CORE_PARSER_LIB} z curl stdc++)
 
 
