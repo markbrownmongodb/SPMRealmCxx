@@ -4,8 +4,6 @@ project (SPMRealmCxx)
 
 set(CMAKE_CXX_STANDARD 20)
 set(REALM_ENABLE_SYNC 1)
-set(REALM_USE_UV 1)
-add_compile_definitions(REALM_USE_UV=1)
 
 add_executable(SPMRealmCxx Sources/SPMRealmCxx/main.cpp Sources/SPMRealmCxx/event_loop.cpp Sources/SPMRealmCxx/event_loop.hpp)
 target_include_directories(SPMRealmCxx PUBLIC /usr/local/include)
