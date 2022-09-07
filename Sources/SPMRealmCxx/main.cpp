@@ -335,20 +335,56 @@ int main() {
     while (task.handle.done() == false) { }
 
     auto config = task.await_resume();
+    
     realm::notification_token token;
     auto db = realm::open<DVRDatum>(config);
-    auto obj = *db.objects<DVRDatum>()[0];
-
-    realm::util::EventLoop::main().perform([c = std::move(config), &token, &db, &obj]() {
-        token = obj.observe<DVRDatum>([](auto&& change) {
-            std::cout << "property changed async" << std::endl;
-            std::cout << "device: " << *(change.object) << std::endl;
+    realm::ResultsChange<DVRDatum> dvrDatumChange;
+    auto results = db.objects<DVRDatum>();
+    
+    realm::util::EventLoop::main().perform([c = std::move(config), &token, &db, &results, &dvrDatumChange]() {
+        token = results.observe([&](realm::ResultsChange<DVRDatum> c, std::exception_ptr) {
+            std::cout << "collection changed async" << std::endl;
+            dvrDatumChange = std::move(c);
+            std::cout << "modification count: " << dvrDatumChange.modifications.size() << std::endl;
+            std::cout << "insertion count: " << dvrDatumChange.insertions.size() << std::endl;
+            std::cout << "deletion count: " << dvrDatumChange.deletions.size() << std::endl;
+            std::cout << "collection is empty: " << dvrDatumChange.empty() << std::endl;
+            std::cout << "collection is deleted: " << dvrDatumChange.collection_root_was_deleted << std::endl;
+            
+            std::vector<DVRDatum> myDevices;
+            std::copy(dvrDatumChange.collection->begin(), dvrDatumChange.collection->end(), std::back_inserter(myDevices));
+            std::cout << "collection count: " << myDevices.size() << std::endl;
+            
+            // You can iterate through modification, insertions, deletions, or the full collection.
+            // Here's an example of iterating through collections that have been modified.
+            for (auto& index:dvrDatumChange.modifications) {
+                std::cout << "mod index: " << index << std::endl;
+                std::cout << "mod device: " << myDevices[index] << std::endl;
+            }
         });
     });
-
+    
     realm::util::EventLoop::main().run_until([]() {
         return false;
     });
+
+    
+// The commented code sample below shows listening for a change on an individual object.
+//
+//    realm::notification_token token;
+//    auto db = realm::open<DVRDatum>(config);
+//    auto obj = *db.objects<DVRDatum>()[0];
+//
+//    realm::util::EventLoop::main().perform([c = std::move(config), &token, &db, &obj]() {
+//        token = obj.observe<DVRDatum>([](auto&& change) {
+//            std::cout << "property changed async" << std::endl;
+//            std::cout << "device: " << *(change.object) << std::endl;
+//        });
+//    });
+//
+//    realm::util::EventLoop::main().run_until([]() {
+//        return false;
+//    });
 
     return 0;
 }
