@@ -338,11 +338,11 @@ int main() {
     
     realm::notification_token token;
     auto db = realm::open<DVRDatum>(config);
-    realm::ResultsChange<DVRDatum> dvrDatumChange;
+    realm::results_change<DVRDatum> dvrDatumChange;
     auto results = db.objects<DVRDatum>();
     
     realm::util::EventLoop::main().perform([c = std::move(config), &token, &db, &results, &dvrDatumChange]() {
-        token = results.observe([&](realm::ResultsChange<DVRDatum> c, std::exception_ptr) {
+        token = results.observe([&](realm::results_change<DVRDatum> c, std::exception_ptr) {
             std::cout << "collection changed async" << std::endl;
             dvrDatumChange = std::move(c);
             std::cout << "modification count: " << dvrDatumChange.modifications.size() << std::endl;
